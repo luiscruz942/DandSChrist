@@ -173,33 +173,40 @@ app.post("/webhook", express.raw({ type: "application/json" }), async (req, res)
 
     if (payment.status !== "approved") return;
 
-    // Buscar pedido pendiente por external_reference (que es el preferenceId)
+    // El external_reference ahora es el ID del documento en pending_orders,
+    // así que lo buscamos directamente por ID (no por preferenceId).
     const externalRef = payment.external_reference;
-    console.log("🔎 Buscando pedido con external_reference:", externalRef);
+    console.log("🔎 Buscando pedido pendiente con ID:", externalRef);
 
-    let snapshot;
+    let pendingDoc = null;
+
     if (externalRef) {
-      snapshot = await db.collection("pending_orders")
-        .where("preferenceId", "==", externalRef)
-        .limit(1)
-        .get();
+      const docRef = db.collection("pending_orders").doc(externalRef);
+      const docSnap = await docRef.get();
+      if (docSnap.exists) {
+        pendingDoc = docSnap;
+      }
     }
 
-    // Fallback: tomar el más reciente si no encontró por referencia
-    if (!snapshot || snapshot.empty) {
-      console.log("⚠️ No encontrado por external_reference, tomando el más reciente");
-      snapshot = await db.collection("pending_orders")
+    // Fallback: tomar el más reciente si no encontró por ID
+    // (solo debería pasar si external_reference vino vacío o desactualizado)
+    if (!pendingDoc) {
+      console.log("⚠️ No encontrado por ID, tomando el más reciente como fallback");
+      const snapshot = await db.collection("pending_orders")
         .orderBy("createdAt", "desc")
         .limit(1)
         .get();
+
+      if (!snapshot.empty) {
+        pendingDoc = snapshot.docs[0];
+      }
     }
 
-    if (snapshot.empty) {
+    if (!pendingDoc) {
       console.log("⚠️ No hay pedidos pendientes en Firestore");
       return;
     }
 
-    const pendingDoc  = snapshot.docs[0];
     const pendingData = pendingDoc.data();
 
     const orderData = {
@@ -243,6 +250,16 @@ app.post("/create-preference", async (req, res) => {
         });
     }
 
+    // 1. Guardar primero el pedido pendiente para obtener un ID propio de Firestore.
+    //    Este ID se usará como external_reference en Mercado Pago, para poder
+    //    identificar el pedido exacto cuando llegue el webhook.
+    const pendingRef = await db.collection("pending_orders").add({
+      items,
+      shipping,
+      createdAt: new Date(),
+    });
+
+    // 2. Crear la preferencia en Mercado Pago usando ese ID como external_reference
     const response = await new Preference(client).create({
       body: {
         items: items.map(item => ({
@@ -269,21 +286,16 @@ app.post("/create-preference", async (req, res) => {
           failure: `${BASE_URL}/Index.html`,
           pending: `${BASE_URL}/Index.html`,
         },
-        // external_reference vincula el pago con el pedido pendiente
-        external_reference: "PENDING" // se actualiza abajo con el ID real
+        // external_reference vincula el pago con el pedido pendiente real
+        external_reference: pendingRef.id,
       },
     });
 
-    // Guardar pedido pendiente con el preferenceId real de MP
-    await db.collection("pending_orders").add({
-      items,
-      shipping,
-      preferenceId: response.id,
-      createdAt:    new Date(),
-    });
+    // 3. Guardar el preferenceId real de MP en el mismo documento pendiente
+    await pendingRef.update({ preferenceId: response.id });
 
     console.log("✅ Preferencia creada:", response.id);
-    console.log("📦 Pedido pendiente guardado en Firestore");
+    console.log("📦 Pedido pendiente guardado en Firestore con ID:", pendingRef.id);
     res.json({ init_point: response.init_point });
 
   } catch (err) {
