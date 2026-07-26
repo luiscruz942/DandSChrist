@@ -11,12 +11,27 @@ import { dirname } from "path";
 
 dotenv.config();
 
+const requiredEnv = [
+    "MP_ACCESS_TOKEN",
+    "EMAIL_USER",
+    "EMAIL_APP_PASSWORD",
+    "FIREBASE_SERVICE_ACCOUNT",
+    "BASE_URL"
+];
+
+for (const env of requiredEnv) {
+    if (!process.env[env]) {
+        throw new Error(`Falta la variable de entorno ${env}`);
+    }
+}
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = dirname(__filename);
 const require    = createRequire(import.meta.url);
 
 const app = express();
 app.use(cors());
+app.use(express.json());
 app.use(express.static(__dirname));
 
 // ── Firebase Admin ─────────────────────────────────────────────
@@ -31,7 +46,11 @@ const db = getFirestore();
 const MP_ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN;
 const client = new MercadoPagoConfig({ accessToken: MP_ACCESS_TOKEN.trim() });
 
-const NGROK_URL = "https://abdomen-stiffen-moonshine.ngrok-free.dev";
+const BASE_URL = process.env.BASE_URL;
+
+if (!BASE_URL) {
+  throw new Error("BASE_URL no está definida");
+}
 
 // ── Email (Nodemailer con Gmail) ────────────────────────────────
 const OWNER_EMAIL = "luisdelacruz4032@gmail.com";
@@ -121,7 +140,7 @@ async function sendOrderEmails(orderData) {
         subject: "✅ ¡Confirmamos tu pedido en DandS!",
         html: `
           <div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;">
-            <h2>¡Gracias por tu compra, ${orderData.shipping?.nombre || ""}! 🎉</h2>
+            <h2>¡Gracias por tu compra, ${orderData.shipping?.nombre || ""}! </h2>
             <p>Tu pago fue confirmado y ya estamos preparando tu pedido.</p>
             ${html}
             <p style="margin-top:16px;color:#555;">Te avisaremos cuando esté en camino.</p>
@@ -136,7 +155,7 @@ async function sendOrderEmails(orderData) {
 
 // ── Webhook ────────────────────────────────────────────────────
 app.post("/webhook", express.raw({ type: "application/json" }), async (req, res) => {
-  res.sendStatus(200); // Responde rápido a MP
+  res.status(200).send("OK"); // Responde rápido a MP
 
   try {
     const body = JSON.parse(req.body.toString());
@@ -207,12 +226,22 @@ app.post("/webhook", express.raw({ type: "application/json" }), async (req, res)
   }
 });
 
-app.use(express.json());
-
 // ── POST /create-preference ────────────────────────────────────
 app.post("/create-preference", async (req, res) => {
   try {
     const { items, shipping } = req.body;
+
+    if (!items || !Array.isArray(items) || items.length === 0) {
+        return res.status(400).json({
+            error: "El carrito está vacío."
+        });
+    }
+
+    if (!shipping) {
+        return res.status(400).json({
+            error: "No se recibieron datos de envío."
+        });
+    }
 
     const response = await new Preference(client).create({
       body: {
@@ -234,14 +263,14 @@ app.post("/create-preference", async (req, res) => {
         additional_info: shipping
           ? `Envío: ${shipping.direccion}, ${shipping.ciudad}, ${shipping.departamento}${shipping.notas ? ` | ${shipping.notas}` : ""}`
           : "",
-        notification_url: `${NGROK_URL}/webhook`,
+        notification_url: `${BASE_URL}/webhook`,
         back_urls: {
-          success: `${NGROK_URL}/Index.html`,
-          failure: `${NGROK_URL}/Index.html`,
-          pending: `${NGROK_URL}/Index.html`,
+          success: `${BASE_URL}/Index.html`,
+          failure: `${BASE_URL}/Index.html`,
+          pending: `${BASE_URL}/Index.html`,
         },
         // external_reference vincula el pago con el pedido pendiente
-        external_reference: "PENDING", // se actualiza abajo con el ID real
+        external_reference: "PENDING" // se actualiza abajo con el ID real
       },
     });
 
@@ -262,8 +291,9 @@ app.post("/create-preference", async (req, res) => {
     res.status(500).json({ error: "No se pudo crear la preferencia" });
   }
 });
+const PORT = process.env.PORT || 3000;
 
-app.listen(3000, () => {
-  console.log("🚀 Servidor DandS activo en http://localhost:3000");
-  console.log(`🌐 Webhook: ${NGROK_URL}/webhook`);
+app.listen(PORT, () => {
+    console.log(`🚀 Servidor DandS activo en el puerto ${PORT}`);
+    console.log(`🌐 Webhook: ${BASE_URL}/webhook`);
 });
