@@ -30,7 +30,7 @@ const __dirname  = dirname(__filename);
 const require    = createRequire(import.meta.url);
 
 const app = express();
-app.use(cors());
+app.use(cors({ origin: "https://dandschrist.com" }));
 app.use(express.json());
 app.use(express.static(__dirname));
 
