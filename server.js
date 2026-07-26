@@ -1,6 +1,5 @@
 import express from "express";
 import cors from "cors";
-import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 import { MercadoPagoConfig, Preference, Payment } from "mercadopago";
 import { initializeApp, cert } from "firebase-admin/app";
@@ -13,8 +12,7 @@ dotenv.config();
 
 const requiredEnv = [
     "MP_ACCESS_TOKEN",
-    "EMAIL_USER",
-    "EMAIL_APP_PASSWORD",
+    "RESEND_API_KEY",
     "FIREBASE_SERVICE_ACCOUNT",
     "BASE_URL"
 ];
@@ -52,31 +50,41 @@ if (!BASE_URL) {
   throw new Error("BASE_URL no está definida");
 }
 
-// ── Email (Nodemailer con Gmail) ────────────────────────────────
+// ── Email (Resend — API HTTP, evita el bloqueo de puertos SMTP en Render) ──
 const OWNER_EMAIL = "luisdelacruz4032@gmail.com";
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,           // luisdelacruz4032@gmail.com
-    pass: process.env.EMAIL_APP_PASSWORD,   // contraseña de aplicación de 16 caracteres
-  },
-});
+// Dirección remitente: debe pertenecer a un dominio verificado en Resend.
+// Cambia esto si verificaste otro subdominio distinto a dandschrist.com
+const FROM_ADDRESS = "DandS <pedidos@dandschrist.com>";
+
+async function sendEmail({ to, subject, html }) {
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${RESEND_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: FROM_ADDRESS,
+      to: [to],
+      subject,
+      html,
+    }),
+  });
+
+  if (!res.ok) {
+    const errBody = await res.text();
+    throw new Error(`Resend respondió ${res.status}: ${errBody}`);
+  }
+
+  return res.json();
+}
 
 // ── Diagnóstico de arranque ──────────────────────────────────────
 console.log("── Verificando configuración ──");
 console.log("MP_ACCESS_TOKEN definido:", !!process.env.MP_ACCESS_TOKEN);
-console.log("EMAIL_USER definido:", !!process.env.EMAIL_USER, process.env.EMAIL_USER ? `(${process.env.EMAIL_USER})` : "");
-console.log("EMAIL_APP_PASSWORD definido:", !!process.env.EMAIL_APP_PASSWORD);
-
-transporter.verify((err, success) => {
-  if (err) {
-    console.error("❌ Nodemailer NO pudo conectar con Gmail:", err.message);
-    console.error("   → Revisa que EMAIL_USER y EMAIL_APP_PASSWORD estén bien en tu .env");
-  } else {
-    console.log("✅ Nodemailer conectado correctamente a Gmail, listo para enviar correos.");
-  }
-});
+console.log("RESEND_API_KEY definido:", !!process.env.RESEND_API_KEY);
 
 function buildOrderEmailHtml(orderData) {
   const { items, shipping, total, paymentId } = orderData;
@@ -120,8 +128,7 @@ async function sendOrderEmails(orderData) {
 
   // Correo al dueño
   try {
-    await transporter.sendMail({
-      from: `"DandS Pedidos" <${process.env.EMAIL_USER}>`,
+    await sendEmail({
       to: OWNER_EMAIL,
       subject: `🛒 Nuevo pedido — ${orderData.shipping?.nombre || "cliente"}`,
       html,
@@ -134,8 +141,7 @@ async function sendOrderEmails(orderData) {
   // Correo de confirmación al cliente
   if (customerEmail) {
     try {
-      await transporter.sendMail({
-        from: `"DandS" <${process.env.EMAIL_USER}>`,
+      await sendEmail({
         to: customerEmail,
         subject: "✅ ¡Confirmamos tu pedido en DandS!",
         html: `
