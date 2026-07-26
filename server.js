@@ -30,7 +30,7 @@ const __dirname  = dirname(__filename);
 const require    = createRequire(import.meta.url);
 
 const app = express();
-app.use(cors({ origin: "https://dandschrist.com" }));
+app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname));
 
@@ -282,10 +282,11 @@ app.post("/create-preference", async (req, res) => {
           : "",
         notification_url: `${BASE_URL}/webhook`,
         back_urls: {
-          success: `${BASE_URL}/Index.html`,
-          failure: `${BASE_URL}/Index.html`,
-          pending: `${BASE_URL}/Index.html`,
+          success: `${BASE_URL}/index.html?mp_status=success`,
+          failure: `${BASE_URL}/index.html?mp_status=failure`,
+          pending: `${BASE_URL}/index.html?mp_status=pending`,
         },
+        auto_return: "approved",
         // external_reference vincula el pago con el pedido pendiente real
         external_reference: pendingRef.id,
       },
