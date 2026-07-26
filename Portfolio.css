@@ -1,0 +1,95 @@
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-family: "Roboto";
+}
+
+nav {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+}
+
+nav a {
+    color: black;
+    font-weight: bold;
+    font-size: 1.5rem;
+    text-decoration: none;
+}
+
+.hero {
+    height: 100vh;
+    background: linear-gradient(135deg, #A8D8EA, #84EBD3);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.hero h1 {
+    font-size: 60px;
+    margin-bottom: 20px;
+}
+
+.hero p {
+    font-size: 20px;
+    max-width: 500px;
+    text-align: center;
+}
+
+.about {
+    text-align: center;
+    background-color: #E8C96A;
+    padding: 80px 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.about h2 {
+    color: white;
+}
+
+.about p {
+    color: white;
+    max-width: 700px;
+    margin-top: 5px;
+    line-height: 1.6;
+}
+
+.preview {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.preview img {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+}
+
+.cta {
+    display: flex;
+    justify-content: center;
+    margin: 60px 0;
+}
+
+.cta a {
+    padding: 15px 40px;
+    font-size: 18px;
+    background: #E8C96A;
+    color: white;
+    border-radius: 30px;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.cta a:hover {
+    transform: scale(1.05);
+}

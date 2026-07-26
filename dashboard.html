@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - DandS</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      <a href="index.html" class="logo">DandS</a>
+      <nav class="nav">
+        <a href="index.html" class="nav-link">Tienda</a>
+        <a href="dashboard.html" class="nav-link active">Dashboard</a>
+        <button class="btn-logout" id="logout-btn">Salir</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main dashboard-main">
+    <div class="container">
+      <h1 class="dashboard-title">Dashboard</h1>
+
+      <div class="dashboard-grid">
+        <!-- Add Product Form -->
+        <section class="dashboard-card">
+          <h2 class="card-title">Añadir Producto</h2>
+          <form id="product-form" class="product-form">
+            <div class="form-group">
+              <label for="name">Nombre del producto *</label>
+              <input type="text" id="name" name="name" required placeholder="Ejemplo, Mug blanco">
+            </div>
+
+            <div class="form-group">
+              <label for="price">Precio (COP) *</label>
+              <input type="number" id="price" name="price" required min="0" step="0.01" placeholder="10.000">
+            </div>
+
+            <div class="form-group">
+              <label for="category">Categoria *</label>
+              <select id="category" name="category" required>
+                <option value="">Elegir Categoria</option>
+                <option value="shirts">Camisetas</option>
+                <option value="thermos">Termos</option>
+                <option value="mugs">Mugs</option>
+                <option value="accessories">Accesorios</option>
+                <option value="magnets">Imanes</option>
+                <option value="mousepads">Mouse Pads</option>
+                <option value="virgins">Virgenes</option>
+                <option value="christmas">Navidad</option>
+                <option value="retire">Retiros</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="description">Descripcion</label>
+              <textarea id="description" name="description" rows="3" placeholder="descripcion del producto..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>Imágenes (puedes elegir varias)</label>
+                <input class="input-button" type="file" id="image-file" accept="image/*" multiple>
+              <div id="image-preview" class="image-preview"></div>
+              <button type="button" class="btn-clear-image" id="clear-image-btn" style="display:none">✕ Quitar imágenes</button>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Añadir Producto</button>
+              <button type="reset" class="btn btn-secondary">Limpiar</button>
+            </div>
+          </form>
+        </section>
+
+        <!-- Product List -->
+        <section class="dashboard-card">
+          <div class="card-header">
+            <h2 class="card-title">Lista de productos</h2>
+            <span id="product-count" class="product-count">0 products</span>
+          </div>
+          
+          <div id="product-list" class="product-list"></div>
+
+          <div id="no-products" class="no-products">
+            <p>No hay productos aun</p>
+          </div>
+        </section>
+      </div>
+
+      <!-- Orders Section -->
+      <section class="dashboard-card orders-card">
+        <div class="card-header">
+          <h2 class="card-title">Pedidos</h2>
+          <span id="order-count" class="product-count">0 pedidos</span>
+        </div>
+        <div id="orders-list" class="orders-list"></div>
+        <div id="no-orders" class="no-products">
+          <p>No hay pedidos aún</p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="delete-modal" class="modal">
+    <div class="modal-content">
+      <h3>Borrar producto</h3>
+      <p>Seguro que quieres borrar el producto?</p>
+      <div class="modal-actions">
+        <button id="confirm-delete" class="btn btn-danger">Borrar</button>
+        <button id="cancel-delete" class="btn btn-secondary">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast"></div>
+
+  <script type="module" src="script.js"></script>
+  <script>
+    // ── Auth guard ─────────────────────────────────────────────
+
+    document.getElementById('logout-btn').addEventListener('click', async () => {
+      await window.signOut(window.auth);
+      window.location.href = 'index.html';
+    });
+
+    // ── Dashboard logic (original) ──────────────────────────────
+    let deleteProductId = null;
+    let deleteOrderId   = null;
+
+    function confirmDeleteOrder(id) {
+      deleteOrderId = id;
+      deleteProductId = null;
+      const modal = document.getElementById('delete-modal');
+      modal.querySelector('h3').textContent = 'Borrar pedido';
+      modal.querySelector('p').textContent  = '¿Seguro que quieres borrar este pedido?';
+      modal.classList.add('active');
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await renderProductList();
+      await renderOrders();
+      setupForm();
+      setupModal();
+    });
+
+    async function renderOrders() {
+      const orders   = await window.getOrders();
+      const list     = document.getElementById('orders-list');
+      const noOrders = document.getElementById('no-orders');
+      const countEl  = document.getElementById('order-count');
+
+      countEl.textContent = `${orders.length} pedido${orders.length !== 1 ? 's' : ''}`;
+
+      if (orders.length === 0) {
+        list.style.display = 'none';
+        noOrders.style.display = 'block';
+        return;
+      }
+
+      list.style.display = 'flex';
+      noOrders.style.display = 'none';
+
+      list.innerHTML = orders
+        .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
+        .map(order => {
+          const date = order.createdAt
+            ? new Date(order.createdAt.seconds * 1000).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+            : '—';
+          const total = order.items?.reduce((s, i) => s + i.price * i.qty, 0) || 0;
+          const itemsSummary = order.items?.map(i => `${i.qty}× ${i.name}`).join(', ') || '';
+
+          return `
+          <div class="order-item">
+            <div class="order-header-row">
+              <div class="order-id">Pedido <span>#${order.id.slice(-6).toUpperCase()}</span></div>
+              <div class="order-header-right">
+                <div class="order-date">${date}</div>
+                <button class="btn-delete-order" onclick="confirmDeleteOrder('${order.id}')" title="Borrar pedido">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                       stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 6h18"></path>
+                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="order-body">
+              <div class="order-info-group">
+                <p class="order-label">Cliente</p>
+                <p class="order-value">${order.shipping?.nombre || '—'}</p>
+              </div>
+              <div class="order-info-group">
+                <p class="order-label">Teléfono</p>
+                <p class="order-value">${order.shipping?.telefono || '—'}</p>
+              </div>
+              <div class="order-info-group">
+                <p class="order-label">Dirección</p>
+                <p class="order-value">${order.shipping?.direccion || '—'}, ${order.shipping?.ciudad || ''}, ${order.shipping?.departamento || ''}</p>
+              </div>
+              ${order.shipping?.notas ? `
+              <div class="order-info-group">
+                <p class="order-label">Notas</p>
+                <p class="order-value">${order.shipping.notas}</p>
+              </div>` : ''}
+              <div class="order-info-group">
+                <p class="order-label">Productos</p>
+                <p class="order-value">${itemsSummary}</p>
+              </div>
+              <div class="order-info-group">
+                <p class="order-label">Total</p>
+                <p class="order-value order-total">COP $${total.toLocaleString('es-CO')}</p>
+              </div>
+            </div>
+          </div>`;
+        }).join('');
+    }
+
+    async function renderProductList() {
+      const products = await getProducts();
+      const list      = document.getElementById('product-list');
+      const noProducts = document.getElementById('no-products');
+      const countEl   = document.getElementById('product-count');
+
+      countEl.textContent = `${products.length} product${products.length !== 1 ? 's' : ''}`;
+
+      if (products.length === 0) {
+        list.style.display = 'none';
+        noProducts.style.display = 'block';
+        return;
+      }
+
+      list.style.display = 'block';
+      noProducts.style.display = 'none';
+
+      list.innerHTML = products.map(product => `
+        <div class="product-item" data-id="${product.id}">
+          <img src="${product.image || 'https://placehold.co/60x60/0a0a0a/86efac?text=D%26S'}"
+               alt="${product.name}" class="product-thumb">
+          <div class="product-details">
+            <h4>${product.name}</h4>
+            <p class="product-meta">
+              <span class="category-tag">${product.category}</span>
+              <span class="price-tag">$${product.price.toFixed(2)}</span>
+              ${product.images && product.images.length > 1 ? `<span class="image-count-tag">${product.images.length}</span>` : ''}
+            </p>
+          </div>
+          <button class="btn-icon delete-btn" onclick="openDeleteModal('${product.id}')" title="Delete">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 6h18"></path>
+              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+            </svg>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function setupForm() {
+      const form = document.getElementById('product-form');
+      const fileInput = document.getElementById('image-file');
+      const previewEl = document.getElementById('image-preview');
+      const clearBtn = document.getElementById('clear-image-btn');
+
+      fileInput.addEventListener('change', () => {
+        const files = Array.from(fileInput.files);
+        if (files.length === 0) {
+          previewEl.innerHTML = '';
+          clearBtn.style.display = 'none';
+          return;
+        }
+        clearBtn.style.display = 'inline-block';
+        previewEl.innerHTML = files.map(f => `
+          <div class="image-preview-thumb">
+            <img src="${URL.createObjectURL(f)}" alt="${f.name}">
+          </div>
+        `).join('');
+      });
+
+      clearBtn.addEventListener('click', () => {
+        fileInput.value = '';
+        previewEl.innerHTML = '';
+        clearBtn.style.display = 'none';
+      });
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(form);
+        const files = Array.from(fileInput.files);
+
+        let images = [];
+
+        if (files.length > 0) {
+          const submitBtn = form.querySelector('button[type="submit"]');
+          const originalText = submitBtn.textContent;
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Subiendo imágenes...';
+          try {
+            images = await uploadImages(files);
+          } catch (err) {
+            console.error(err);
+            showToast('Error al subir una o más imágenes', 'error');
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+            return;
+          }
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalText;
+        }
+
+        const product = {
+          name:        formData.get('name').trim(),
+          price:       parseFloat(formData.get('price')),
+          category:    formData.get('category'),
+          description: formData.get('description').trim(),
+          images:      images,
+          image:       images[0] || '' // compatibilidad con vistas que usan una sola imagen
+        };
+          await addProduct(product);
+          form.reset();
+          previewEl.innerHTML = '';
+          clearBtn.style.display = 'none';
+          renderProductList();
+          showToast('Product added successfully!', 'success');
+      });
+
+    }
+
+    function setupModal() {
+      const modal      = document.getElementById('delete-modal');
+      const confirmBtn = document.getElementById('confirm-delete');
+      const cancelBtn  = document.getElementById('cancel-delete');
+
+      confirmBtn.addEventListener('click', async () => {
+        if (deleteProductId) {
+          await deleteProduct(deleteProductId);
+          renderProductList();
+          showToast('Producto eliminado', 'info');
+        } else if (deleteOrderId) {
+          await window.deleteOrder(deleteOrderId);
+          renderOrders();
+          showToast('Pedido eliminado', 'info');
+        }
+        closeModal();
+      });
+
+      cancelBtn.addEventListener('click', closeModal);
+
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+      });
+    }
+
+    function openDeleteModal(id) {
+      deleteProductId = id;
+      document.getElementById('delete-modal').classList.add('active');
+    }
+
+    function closeModal() {
+      deleteProductId = null;
+      deleteOrderId   = null;
+      const modal = document.getElementById('delete-modal');
+      modal.querySelector('h3').textContent = 'Borrar producto';
+      modal.querySelector('p').textContent  = 'Seguro que quieres borrar el producto?';
+      modal.classList.remove('active');
+    }
+
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = `toast ${type} active`;
+      setTimeout(() => toast.classList.remove('active'), 3000);
+    }
+
+    window.addEventListener('load', () => {
+      window.observeAuth((user) => {
+        if (!user) {
+          window.location.href = "index.html";
+        }
+      });
+    });
+  </script>
+</body>
+</html>

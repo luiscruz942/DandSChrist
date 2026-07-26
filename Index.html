@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DandS Christ</title>
+  <link rel="icon" href="images/logo.png" type="image/png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      <a href="index.html" class="logo"><img src="images/logo.png" width="75"></a>
+      <nav class="nav">
+        <a href="index.html" class="nav-link active">Tienda</a>
+        <a href="Portfolio.html" class="nav-link">¿Quienes Somos?</a>
+        <button class="cart-btn" id="cart-btn" aria-label="Carrito">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9" cy="21" r="1"></circle>
+            <circle cx="20" cy="21" r="1"></circle>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+          </svg>
+          <span class="cart-count" id="cart-count">0</span>
+        </button>
+        <button class="btn-logout" id="login-nav-btn">Iniciar Sesion</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="hero">
+      <div class="container">
+      </div>
+    </section>
+
+    <section class="shop-section">
+      <div class="container">
+        <h2 class="section-title">Nuestra Coleccion</h2>
+        
+        <div class="filters">
+          <button class="filter-btn active" data-category="all">Todo</button>
+          <button class="filter-btn" data-category="shirts">Camisetas</button>
+          <button class="filter-btn" data-category="thermos">Termos</button>
+          <button class="filter-btn" data-category="mugs">Mugs</button>
+          <button class="filter-btn" data-category="mousepads">Mouse Pad</button>
+          <button class="filter-btn" data-category="accessories">Accesorios</button>
+          <button class="filter-btn" data-category="magnets">Imanes</button>
+          <button class="filter-btn" data-category="virgins">Virgenes</button>
+          <button class="filter-btn" data-category="christmas">Navidad</button>
+          <button class="filter-btn" data-category="retires">Retiros</button>
+        </div>
+
+        <div id="products-grid" class="products-grid">
+          <!-- Products will be loaded here -->
+        </div>
+
+        <div id="empty-state" class="empty-state" style="display: none;">
+          <p>No hay productos disponibles</p>
+          <a href="#" class="btn btn-primary" id="empty-add-btn">Añadir Productos</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2026 DandS Christ. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Product Detail Modal (fullscreen) -->
+  <div class="pdp-overlay" id="pdp-overlay">
+    <div class="pdp-modal" id="pdp-modal">
+
+      <button class="pdp-close" id="pdp-close" aria-label="Cerrar">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
+      <div class="pdp-inner">
+        <!-- Image panel -->
+        <div class="pdp-image-panel">
+          <img id="pdp-img" src="" alt="" class="pdp-img">
+          <span id="pdp-category-badge" class="pdp-category-badge"></span>
+          <div id="pdp-thumbs" class="pdp-thumbs"></div>
+        </div>
+
+        <!-- Info panel -->
+        <div class="pdp-info-panel">
+          <div class="pdp-info-top">
+            <p class="pdp-brand">DandS</p>
+            <h1 class="pdp-name" id="pdp-name"></h1>
+            <p class="pdp-price" id="pdp-price"></p>
+            <div class="pdp-divider"></div>
+            <p class="pdp-desc" id="pdp-desc"></p>
+
+            <div class="pdp-meta">
+              <div class="pdp-meta-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M5 12h14"></path><path d="M12 5l7 7-7 7"></path>
+                </svg>
+                Envío a todo Colombia
+              </div>
+              <div class="pdp-meta-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                Calidad garantizada
+              </div>
+              <div class="pdp-meta-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                Despacho en 24–48 h
+              </div>
+            </div>
+          </div>
+
+          <div class="pdp-actions">
+            <div class="pdp-qty-row">
+              <span class="pdp-qty-label">Cantidad</span>
+              <div class="pdp-qty-control">
+                <button class="pdp-qty-btn" id="pdp-qty-minus">−</button>
+                <span class="pdp-qty-value" id="pdp-qty-value">1</span>
+                <button class="pdp-qty-btn" id="pdp-qty-plus">+</button>
+              </div>
+            </div>
+            <button class="pdp-add-btn" id="pdp-add-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="9" cy="21" r="1"></circle>
+                <circle cx="20" cy="21" r="1"></circle>
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+              </svg>
+              Agregar al carrito
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Cart Drawer -->
+  <div class="cart-overlay" id="cart-overlay"></div>
+  <aside class="cart-drawer" id="cart-drawer">
+    <div class="cart-header">
+      <h2 class="cart-title">Tu Carrito</h2>
+      <button class="cart-close" id="cart-close" aria-label="Cerrar carrito">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <div class="cart-items" id="cart-items"></div>
+
+    <div class="cart-empty" id="cart-empty">
+      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--color-gray-300);margin-bottom:1rem">
+        <circle cx="9" cy="21" r="1"></circle>
+        <circle cx="20" cy="21" r="1"></circle>
+        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+      </svg>
+      <p>Tu carrito está vacío</p>
+      <span>Agrega productos para comenzar</span>
+    </div>
+
+    <div class="cart-footer" id="cart-footer">
+      <div class="cart-summary">
+        <div class="cart-summary-row">
+          <span>Subtotal (<span id="cart-items-count">0</span> items)</span>
+          <span id="cart-subtotal">COP $0</span>
+        </div>
+        <div class="cart-summary-row cart-total-row">
+          <strong>Total</strong>
+          <strong id="cart-total">COP $0</strong>
+        </div>
+      </div>
+      <button class="btn-checkout" id="checkout-btn">Finalizar Compra</button>
+      <button class="btn-clear-cart" id="clear-cart-btn">Vaciar carrito</button>
+    </div>
+  </aside>
+
+  <!-- Shipping Address Modal -->
+  <div class="shipping-overlay" id="shipping-overlay">
+    <div class="shipping-box">
+      <div class="shipping-header">
+        <h2>Dirección de envío</h2>
+        <button class="shipping-close" id="shipping-close">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <p class="shipping-subtitle">¿A dónde enviamos tu pedido?</p>
+
+      <div class="shipping-form">
+        <div class="shipping-row">
+          <div class="form-group">
+            <label for="s-nombre">Nombre completo *</label>
+            <input type="text" id="s-nombre" placeholder="Ej: Juan Pérez">
+          </div>
+          <div class="form-group">
+            <label for="s-telefono">Teléfono *</label>
+            <input type="tel" id="s-telefono" placeholder="Ej: 3001234567">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="s-correo">Correo electrónico *</label>
+          <input type="email" id="s-correo" placeholder="Ej: juan@correo.com">
+        </div>
+
+        <div class="form-group">
+          <label for="s-direccion">Dirección *</label>
+          <input type="text" id="s-direccion" placeholder="Ej: Calle 10 # 5-20, Apto 301">
+        </div>
+
+        <div class="shipping-row">
+          <div class="form-group">
+            <label for="s-ciudad">Ciudad *</label>
+            <input type="text" id="s-ciudad" placeholder="Ej: Medellín">
+          </div>
+          <div class="form-group">
+            <label for="s-departamento">Departamento *</label>
+            <input type="text" id="s-departamento" placeholder="Ej: Antioquia">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="s-notas">Notas adicionales</label>
+          <textarea id="s-notas" rows="2" placeholder="Indicaciones para el domiciliario..."></textarea>
+        </div>
+
+        <p class="shipping-error" id="shipping-error"></p>
+
+        <button class="btn-go-pay" id="btn-go-pay">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+            <line x1="1" y1="10" x2="23" y2="10"></line>
+          </svg>
+          Ir a pagar con Mercado Pago
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Login Modal -->
+  <div class="login-overlay" id="login-overlay">
+    <div class="login-box">
+      <div class="login-logo">DandS</div>
+      <p class="login-subtitle">Acceso al Dashboard</p>
+      <div class="login-form">
+        <div class="form-group">
+          <label for="login-user">Usuario</label>
+          <input type="email" id="login-user" placeholder="Ingrese email" autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label for="login-pass">Contraseña</label>
+          <input type="password" id="login-pass" placeholder="Ingrese contraseña" autocomplete="current-password">
+        </div>
+        <p class="login-error" id="login-error"></p>
+        <button class="btn-login" id="login-btn">Iniciar sesion</button>
+      </div>
+      <p class="login-hint">© Dands Christ 2026</p>
+    </div>
+  </div>
+
+  <script type="module" src="script.js"></script>
+  <script type="module">
+    import { login, observeAuth } from "./script.js";
+
+    // ── Login overlay logic ───────────────────────────────────────
+    const overlay    = document.getElementById('login-overlay');
+    const loginBtn   = document.getElementById('login-btn');
+    const loginError = document.getElementById('login-error');
+    const userInput  = document.getElementById('login-user');
+    const passInput  = document.getElementById('login-pass');
+
+    async function attemptLogin() {
+      const user = userInput.value.trim();
+      const pass = passInput.value;
+
+      if (!user || !pass) {
+        loginError.textContent = 'Please enter your credentials.';
+        return;
+      }
+
+      const success = await login(user, pass);
+
+      if (success) {
+        overlay.classList.remove('active');
+        window.location.href = 'dashboard.html';
+      } else {
+        loginError.textContent = 'Incorrect username or password.';
+      }
+    }
+
+    function openLogin() {
+      overlay.classList.add('active');
+      userInput.value = '';
+      passInput.value = '';
+      loginError.textContent = '';
+      setTimeout(() => userInput.focus(), 100);
+    }
+
+    loginBtn.addEventListener('click', attemptLogin);
+    [userInput, passInput].forEach(el =>
+      el.addEventListener('keydown', e => { if (e.key === 'Enter') attemptLogin(); })
+    );
+
+    // ── Nav login button ──────────────────────────────────────────
+    let currentUser = null;
+
+    observeAuth((user) => {
+      currentUser = user;
+    });
+
+    document.getElementById('login-nav-btn').addEventListener('click', () => {
+      if (currentUser) {
+        window.location.href = 'dashboard.html';
+      } else {
+        openLogin();
+      }
+    });
+
+    // ── Empty state "Add Products" button ─────────────────────────
+    document.getElementById('empty-add-btn').addEventListener('click', (e) => {
+      e.preventDefault();
+
+      if (currentUser) {
+        window.location.href = 'dashboard.html';
+      } else {
+        openLogin();
+      }
+    });
+
+    // Close overlay on outside click
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) overlay.classList.remove('active');
+    });
+
+    // ── Shop rendering ────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', async () => {
+      await renderProducts();
+      setupFilters();
+    });
+
+    async function renderProducts(category = 'all') {
+      const products = await getProducts();
+      const grid = document.getElementById('products-grid');
+      const emptyState = document.getElementById('empty-state');
+
+      const filtered = category === 'all'
+        ? products
+        : products.filter(p => p.category === category);
+
+      if (filtered.length === 0) {
+        grid.style.display = 'none';
+        emptyState.style.display = 'block';
+        return;
+      }
+
+      grid.style.display = 'grid';
+      emptyState.style.display = 'none';
+
+      grid.innerHTML = filtered.map(product => `
+        <article class="product-card">
+          <div class="product-image">
+            <img src="${product.image || 'https://placehold.co/300x400/0a0a0a/86efac?text=D%26S'}" alt="${product.name}">
+            <span class="product-category">${product.category}</span>
+          </div>
+          <div class="product-info">
+            <h3 class="product-name">${product.name}</h3>
+            <p class="product-description">${product.description}</p>
+            <div class="product-footer">
+              <span class="product-price">COP ${product.price.toLocaleString('es-CO',)}</span>
+              <button class="btn btn-small open-pdp-btn"
+                data-id="${product.id}"
+                data-name="${product.name.replace(/"/g,'&quot;')}"
+                data-price="${product.price}"
+                data-image="${product.image || 'https://placehold.co/300x400/0a0a0a/86efac?text=D%26S'}"
+                data-images='${JSON.stringify(product.images && product.images.length ? product.images : [product.image || 'https://placehold.co/300x400/0a0a0a/86efac?text=D%26S']).replace(/'/g, "&#39;")}'
+                data-category="${product.category}"
+                data-description="${(product.description || '').replace(/"/g,'&quot;')}">
+                Comprar
+              </button>
+            </div>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    function setupFilters() {
+      const filterBtns = document.querySelectorAll('.filter-btn');
+      filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          filterBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          renderProducts(btn.dataset.category);
+        });
+      });
+    }
+
+    // ── Cart System ───────────────────────────────────────────────
+    let cart = JSON.parse(localStorage.getItem('dands_cart') || '[]');
+
+    function saveCart() {
+      localStorage.setItem('dands_cart', JSON.stringify(cart));
+    }
+
+    function updateCartCount() {
+      const total = cart.reduce((sum, item) => sum + item.qty, 0);
+      const countEl = document.getElementById('cart-count');
+      countEl.textContent = total;
+      countEl.classList.toggle('has-items', total > 0);
+    }
+
+    function renderCartItems() {
+      const itemsEl   = document.getElementById('cart-items');
+      const emptyEl   = document.getElementById('cart-empty');
+      const footerEl  = document.getElementById('cart-footer');
+      const countEl   = document.getElementById('cart-items-count');
+      const subtotalEl = document.getElementById('cart-subtotal');
+      const totalEl   = document.getElementById('cart-total');
+
+      if (cart.length === 0) {
+        itemsEl.style.display = 'none';
+        emptyEl.style.display = 'flex';
+        footerEl.style.display = 'none';
+        return;
+      }
+
+      itemsEl.style.display = 'flex';
+      emptyEl.style.display = 'none';
+      footerEl.style.display = 'flex';
+
+      const totalQty = cart.reduce((s, i) => s + i.qty, 0);
+      const totalPrice = cart.reduce((s, i) => s + i.price * i.qty, 0);
+
+      countEl.textContent = totalQty;
+      subtotalEl.textContent = 'COP $' + totalPrice.toLocaleString('es-CO');
+      totalEl.textContent   = 'COP $' + totalPrice.toLocaleString('es-CO');
+
+      itemsEl.innerHTML = cart.map(item => `
+        <div class="cart-item" data-id="${item.id}">
+          <img src="${item.image}" alt="${item.name}" class="cart-item-img">
+          <div class="cart-item-info">
+            <p class="cart-item-name">${item.name}</p>
+            <p class="cart-item-price">COP $${(item.price * item.qty).toLocaleString('es-CO')}</p>
+          </div>
+          <div class="cart-item-controls">
+            <button class="qty-btn" onclick="changeQty('${item.id}', -1)">−</button>
+            <span class="qty-display">${item.qty}</span>
+            <button class="qty-btn" onclick="changeQty('${item.id}', 1)">+</button>
+            <button class="remove-item-btn" onclick="removeFromCart('${item.id}')" title="Eliminar">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    window.changeQty = function(id, delta) {
+      const item = cart.find(i => i.id === id);
+      if (!item) return;
+      item.qty += delta;
+      if (item.qty <= 0) cart = cart.filter(i => i.id !== id);
+      saveCart();
+      updateCartCount();
+      renderCartItems();
+    };
+
+    window.removeFromCart = function(id) {
+      cart = cart.filter(i => i.id !== id);
+      saveCart();
+      updateCartCount();
+      renderCartItems();
+    };
+
+    function addToCart(product) {
+      const existing = cart.find(i => i.id === product.id);
+      if (existing) {
+        existing.qty++;
+      } else {
+        cart.push({ ...product, qty: 1 });
+      }
+      saveCart();
+      updateCartCount();
+    }
+
+    function openCart() {
+      document.getElementById('cart-drawer').classList.add('open');
+      document.getElementById('cart-overlay').classList.add('active');
+      document.body.style.overflow = 'hidden';
+      renderCartItems();
+    }
+
+    function closeCart() {
+      document.getElementById('cart-drawer').classList.remove('open');
+      document.getElementById('cart-overlay').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    // ── Product Detail Modal (PDP) ────────────────────────────────
+    let pdpProduct = null;
+    let pdpQty = 1;
+
+    function openPDP(product) {
+      pdpProduct = product;
+      pdpQty = 1;
+
+      const gallery = (product.images && product.images.length) ? product.images : [product.image];
+
+      document.getElementById('pdp-img').src = gallery[0];
+      document.getElementById('pdp-img').alt = product.name;
+      document.getElementById('pdp-name').textContent = product.name;
+      document.getElementById('pdp-price').textContent = 'COP $' + product.price.toLocaleString('es-CO');
+      document.getElementById('pdp-desc').textContent = product.description || 'Producto DandS de alta calidad.';
+      document.getElementById('pdp-category-badge').textContent = product.category;
+      document.getElementById('pdp-qty-value').textContent = 1;
+
+      const thumbsEl = document.getElementById('pdp-thumbs');
+      if (gallery.length > 1) {
+        thumbsEl.style.display = 'flex';
+        thumbsEl.innerHTML = gallery.map((url, i) => `
+          <button type="button" class="pdp-thumb-btn ${i === 0 ? 'active' : ''}" data-index="${i}">
+            <img src="${url}" alt="${product.name} ${i + 1}">
+          </button>
+        `).join('');
+
+        thumbsEl.querySelectorAll('.pdp-thumb-btn').forEach(thumbBtn => {
+          thumbBtn.addEventListener('click', () => {
+            const idx = parseInt(thumbBtn.dataset.index, 10);
+            document.getElementById('pdp-img').src = gallery[idx];
+            thumbsEl.querySelectorAll('.pdp-thumb-btn').forEach(b => b.classList.remove('active'));
+            thumbBtn.classList.add('active');
+          });
+        });
+      } else {
+        thumbsEl.style.display = 'none';
+        thumbsEl.innerHTML = '';
+      }
+
+      const addBtn = document.getElementById('pdp-add-btn');
+      addBtn.textContent = '';
+      addBtn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+        </svg>
+        Agregar al carrito`;
+      addBtn.disabled = false;
+      addBtn.classList.remove('pdp-added');
+
+      document.getElementById('pdp-overlay').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closePDP() {
+      document.getElementById('pdp-overlay').classList.remove('active');
+      document.body.style.overflow = '';
+      pdpProduct = null;
+    }
+
+    document.getElementById('pdp-close').addEventListener('click', closePDP);
+    document.getElementById('pdp-overlay').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('pdp-overlay')) closePDP();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closePDP();
+    });
+
+    document.getElementById('pdp-qty-minus').addEventListener('click', () => {
+      if (pdpQty > 1) {
+        pdpQty--;
+        document.getElementById('pdp-qty-value').textContent = pdpQty;
+      }
+    });
+
+    document.getElementById('pdp-qty-plus').addEventListener('click', () => {
+      pdpQty++;
+      document.getElementById('pdp-qty-value').textContent = pdpQty;
+    });
+
+    document.getElementById('pdp-add-btn').addEventListener('click', () => {
+      if (!pdpProduct) return;
+
+      for (let i = 0; i < pdpQty; i++) {
+        addToCart(pdpProduct);
+      }
+      // If qty > 1 we need to set correctly (addToCart increments by 1 each time, which is fine)
+
+      const addBtn = document.getElementById('pdp-add-btn');
+      addBtn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        ¡Agregado!`;
+      addBtn.classList.add('pdp-added');
+
+      setTimeout(() => {
+        closePDP();
+        openCart();
+      }, 700);
+    });
+
+    // Delegate "Comprar" button on products grid → open PDP
+    document.getElementById('products-grid').addEventListener('click', (e) => {
+      const btn = e.target.closest('.open-pdp-btn');
+      if (!btn) return;
+
+      const product = {
+        id:          btn.dataset.id,
+        name:        btn.dataset.name,
+        price:       parseFloat(btn.dataset.price),
+        image:       btn.dataset.image,
+        images:      JSON.parse(btn.dataset.images || '[]'),
+        category:    btn.dataset.category,
+        description: btn.dataset.description
+      };
+
+      openPDP(product);
+    });
+
+    document.getElementById('cart-btn').addEventListener('click', openCart);
+    document.getElementById('cart-close').addEventListener('click', closeCart);
+    document.getElementById('cart-overlay').addEventListener('click', closeCart);
+
+    document.getElementById('clear-cart-btn').addEventListener('click', () => {
+      cart = [];
+      saveCart();
+      updateCartCount();
+      renderCartItems();
+    });
+
+    // ── Shipping Modal ────────────────────────────────────────────
+    function openShipping() {
+      closeCart();
+      document.getElementById('shipping-overlay').classList.add('active');
+      document.body.style.overflow = 'hidden';
+      document.getElementById('shipping-error').textContent = '';
+      document.getElementById('btn-go-pay').disabled = false;
+      document.getElementById('btn-go-pay').innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+          <line x1="1" y1="10" x2="23" y2="10"></line>
+        </svg>
+        Ir a pagar con Mercado Pago`;
+    }
+
+    function closeShipping() {
+      document.getElementById('shipping-overlay').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    document.getElementById('shipping-close').addEventListener('click', closeShipping);
+    document.getElementById('shipping-overlay').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('shipping-overlay')) closeShipping();
+    });
+
+    // "Finalizar Compra" → abre modal de dirección
+    document.getElementById('checkout-btn').addEventListener('click', () => {
+      if (cart.length === 0) return;
+      openShipping();
+    });
+
+    // "Ir a pagar" → valida dirección y llama a MP
+    document.getElementById('btn-go-pay').addEventListener('click', async () => {
+      const nombre      = document.getElementById('s-nombre').value.trim();
+      const telefono    = document.getElementById('s-telefono').value.trim();
+      const correo      = document.getElementById('s-correo').value.trim();
+      const direccion   = document.getElementById('s-direccion').value.trim();
+      const ciudad      = document.getElementById('s-ciudad').value.trim();
+      const departamento = document.getElementById('s-departamento').value.trim();
+      const notas       = document.getElementById('s-notas').value.trim();
+      const errorEl     = document.getElementById('shipping-error');
+
+      if (!nombre || !telefono || !correo || !direccion || !ciudad || !departamento) {
+        errorEl.textContent = 'Por favor completa todos los campos obligatorios.';
+        return;
+      }
+
+      const correoRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!correoRegex.test(correo)) {
+        errorEl.textContent = 'Por favor ingresa un correo electrónico válido.';
+        return;
+      }
+
+      const btn = document.getElementById('btn-go-pay');
+      btn.disabled = true;
+      btn.textContent = 'Redirigiendo...';
+      errorEl.textContent = '';
+
+      try {
+        const res = await fetch('/create-preference', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            items: cart,
+            shipping: { nombre, telefono, correo, direccion, ciudad, departamento, notas },
+          }),
+        });
+
+        const data = await res.json();
+
+        if (data.init_point) {
+          // Guardar pedido pendiente en sessionStorage
+          // Solo se guardará en Firestore si el pago es exitoso
+          sessionStorage.setItem('pending_order', JSON.stringify({
+            items: cart,
+            shipping: { nombre, telefono, correo, direccion, ciudad, departamento, notas },
+          }));
+          window.location.href = data.init_point;
+        } else {
+          errorEl.textContent = 'Error al iniciar el pago: ' + (data.error || 'intenta de nuevo');
+          btn.disabled = false;
+          btn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+              <line x1="1" y1="10" x2="23" y2="10"></line>
+            </svg>
+            Ir a pagar con Mercado Pago`;
+        }
+      } catch (err) {
+        console.error(err);
+        errorEl.textContent = 'No se pudo conectar con el servidor.';
+        btn.disabled = false;
+        btn.textContent = 'Ir a pagar con Mercado Pago';
+      }
+    });
+
+    // ── Maneja el retorno de Mercado Pago ─────────────────────────
+    // El pedido se guarda en Firestore via webhook en el servidor
+    const mpParams = new URLSearchParams(window.location.search);
+    const mpStatus = mpParams.get('mp_status');
+
+    if (mpStatus === 'success') {
+      cart = [];
+      saveCart();
+      updateCartCount();
+      window.history.replaceState({}, '', window.location.pathname);
+      setTimeout(() => {
+        const toast = document.getElementById('toast');
+        if (toast) {
+          toast.textContent = '✅ ¡Pago exitoso! Gracias por tu compra.';
+          toast.className = 'toast success active';
+          setTimeout(() => toast.classList.remove('active'), 5000);
+        }
+      }, 300);
+
+    } else if (mpStatus === 'failure') {
+      window.history.replaceState({}, '', window.location.pathname);
+      setTimeout(() => {
+        const toast = document.getElementById('toast');
+        if (toast) {
+          toast.textContent = '❌ El pago no se completó. Intenta de nuevo.';
+          toast.className = 'toast error active';
+          setTimeout(() => toast.classList.remove('active'), 5000);
+        }
+      }, 300);
+
+    } else if (mpStatus === 'pending') {
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+
+    // Init cart count on load
+    updateCartCount();
+  </script>
+</body>
+</html>
