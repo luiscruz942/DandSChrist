@@ -29,7 +29,16 @@ const require    = createRequire(import.meta.url);
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+
+// express.json() se aplica a todo, EXCEPTO /webhook, que necesita el body
+// crudo (Buffer) para que su propio middleware express.raw() lo procese.
+// Si no se excluye aquí, express.json() consume el stream primero y el
+// webhook recibe req.body ya parseado como objeto, rompiendo el JSON.parse.
+app.use((req, res, next) => {
+  if (req.path === "/webhook") return next();
+  express.json()(req, res, next);
+});
+
 app.use(express.static(__dirname));
 
 // ── Firebase Admin ─────────────────────────────────────────────
