@@ -484,7 +484,7 @@
         <div class="cart-item" data-id="${item.id}">
           <img src="${item.image}" alt="${item.name}" class="cart-item-img">
           <div class="cart-item-info">
-            <p class="cart-item-name">${item.name}${item.size ? `/n — Talla ${item.size}` : ''}</p>
+            <p class="cart-item-name">${item.name}${item.size ? ` — Talla ${item.size}` : ''}</p>
             <p class="cart-item-price">COP $${(item.price * item.qty).toLocaleString('es-CO')}</p>
           </div>
           <div class="cart-item-controls">
