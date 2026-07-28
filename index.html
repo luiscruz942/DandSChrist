@@ -651,7 +651,8 @@
         image:       btn.dataset.image,
         images:      JSON.parse(btn.dataset.images || '[]'),
         category:    btn.dataset.category,
-        description: btn.dataset.description
+        description: btn.dataset.description,
+        sizes:       JSON.parse(btn.dataset.sizes || '[]')
       };
 
       openPDP(product);
