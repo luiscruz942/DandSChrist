@@ -325,6 +325,11 @@
           submitBtn.textContent = originalText;
         }
 
+        const selectedSizes = Array.from(
+          document.querySelectorAll('#size-checkbox-group input:checked')
+        ).map(cb => cb.value);
+
+
         const product = {
           name:        formData.get('name').trim(),
           price:       parseFloat(formData.get('price')),
@@ -332,6 +337,7 @@
           description: formData.get('description').trim(),
           images:      images,
           image:       images[0] || '' // compatibilidad con vistas que usan una sola imagen
+          sizes:       selectedSizes
         };
           await addProduct(product);
           form.reset();
