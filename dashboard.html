@@ -336,7 +336,7 @@
           category:    formData.get('category'),
           description: formData.get('description').trim(),
           images:      images,
-          image:       images[0] || '' // compatibilidad con vistas que usan una sola imagen
+          image:       images[0] || '', // compatibilidad con vistas que usan una sola imagen
           sizes:       selectedSizes
         };
           await addProduct(product);
