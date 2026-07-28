@@ -416,7 +416,8 @@
                 data-image="${product.image || 'https://placehold.co/300x400/0a0a0a/86efac?text=D%26S'}"
                 data-images='${JSON.stringify(product.images && product.images.length ? product.images : [product.image || 'https://placehold.co/300x400/0a0a0a/86efac?text=D%26S']).replace(/'/g, "&#39;")}'
                 data-category="${product.category}"
-                data-description="${(product.description || '').replace(/"/g,'&quot;')}">
+                data-description="${(product.description || '').replace(/"/g,'&quot;')}"
+                data-sizes='${JSON.stringify(product.sizes || []).replace(/'/g, "&#39;")}'>
                 Comprar
               </button>
             </div>
