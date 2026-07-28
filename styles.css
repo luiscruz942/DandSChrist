@@ -2079,3 +2079,21 @@ a {
     right: 16px;
   }
 }
+
+.size-checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.size-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border: 1px solid var(--bg-card, #3c4167);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
