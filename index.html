@@ -112,6 +112,11 @@
             <p class="pdp-price" id="pdp-price"></p>
             <div class="pdp-divider"></div>
             <p class="pdp-desc" id="pdp-desc"></p>
+            <div class="pdp-size-selector" id="pdp-size-selector" style="display:none;">
+              <p class="pdp-size-label">Talla</p>
+              <div class="pdp-size-options" id="pdp-size-options"></div>
+              <p class="pdp-size-error" id="pdp-size-error"></p>
+            </div>
 
             <div class="pdp-meta">
               <div class="pdp-meta-item">
@@ -551,6 +556,33 @@
       document.getElementById('pdp-desc').textContent = product.description || 'Producto DandS de alta calidad.';
       document.getElementById('pdp-category-badge').textContent = product.category;
       document.getElementById('pdp-qty-value').textContent = 1;
+
+      // ── Selector de talla ──────────────────────────────────────
+      let selectedSize = null;
+      const sizeSelector = document.getElementById('pdp-size-selector');
+      const sizeOptions  = document.getElementById('pdp-size-options');
+      const sizeError    = document.getElementById('pdp-size-error');
+      sizeError.textContent = '';
+
+      if (product.sizes && product.sizes.length > 0) {
+        sizeSelector.style.display = 'block';
+        sizeOptions.innerHTML = product.sizes.map(size => `
+          <button type="button" class="pdp-size-btn" data-size="${size}">${size}</button>
+        `).join('');
+
+        sizeOptions.querySelectorAll('.pdp-size-btn').forEach(sizeBtn => {
+          sizeBtn.addEventListener('click', () => {
+            selectedSize = sizeBtn.dataset.size;
+            sizeOptions.querySelectorAll('.pdp-size-btn').forEach(b => b.classList.remove('active'));
+            sizeBtn.classList.add('active');
+            sizeError.textContent = '';
+          });
+          });
+        } else {
+          sizeSelector.style.display = 'none';
+        }
+
+window.currentSelectedSize = () => selectedSize;
 
       const thumbsEl = document.getElementById('pdp-thumbs');
       if (gallery.length > 1) {
