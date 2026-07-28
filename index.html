@@ -651,6 +651,18 @@ window.currentSelectedSize = () => selectedSize;
     document.getElementById('pdp-add-btn').addEventListener('click', () => {
       if (!pdpProduct) return;
 
+      const requiresSize = pdpProduct.sizes && pdpProduct.sizes.length > 0;
+      const chosenSize = window.currentSelectedSize ? window.currentSelectedSize() : null;
+
+      if (requiresSize && !chosenSize) {
+        document.getElementById('pdp-size-error').textContent = 'Por favor elige una talla.';
+        return;
+      }
+
+      const productWithSize = chosenSize
+        ? { ...pdpProduct, size: chosenSize, id: `${pdpProduct.id}-${chosenSize}` }
+        : pdpProduct;
+
       for (let i = 0; i < pdpQty; i++) {
         addToCart(pdpProduct);
       }
