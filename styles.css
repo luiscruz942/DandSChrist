@@ -2097,3 +2097,49 @@ a {
   cursor: pointer;
   font-size: 0.9rem;
 }
+
+.pdp-size-selector {
+  margin: 16px 0;
+}
+
+.pdp-size-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.pdp-size-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pdp-size-btn {
+  min-width: 44px;
+  padding: 8px 12px;
+  background: transparent;
+  border: 1px solid var(--color-gray-300, #ccc);
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+
+.pdp-size-btn:hover {
+  border-color: var(--accent, #FFC800);
+}
+
+.pdp-size-btn.active {
+  background: var(--accent, #FFC800);
+  border-color: var(--accent, #FFC800);
+  color: #000;
+}
+
+.pdp-size-error {
+  color: #e05555;
+  font-size: 0.85rem;
+  margin-top: 6px;
+  min-height: 1em;
+}
