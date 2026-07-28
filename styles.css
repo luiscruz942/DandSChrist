@@ -138,7 +138,7 @@ a {
 .hero {
   min-height: 500px;
   background: 
-    linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+    linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)),
     url("images/banner.jpg") center/cover no-repeat;
   color: white;
   padding: 5rem 0;
