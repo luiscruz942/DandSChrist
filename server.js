@@ -100,7 +100,7 @@ function buildOrderEmailHtml(orderData) {
 
   const itemsRows = (items || [])
     .map(i => `<tr>
-      <td style="padding:6px 10px;border-bottom:1px solid #eee;">${i.name}</td>
+      <td style="padding:6px 10px;border-bottom:1px solid #eee;">${i.name}${i.size ? ` <span style="color:#888;">(Talla ${i.size})</span>` : ''}</td>
       <td style="padding:6px 10px;border-bottom:1px solid #eee;text-align:center;">${i.qty}</td>
       <td style="padding:6px 10px;border-bottom:1px solid #eee;text-align:right;">$${(i.price * i.qty).toLocaleString('es-CO')}</td>
     </tr>`)
@@ -285,6 +285,7 @@ app.post("/create-preference", async (req, res) => {
         })),
         payer: {
           name:  shipping?.nombre  || "",
+          email: shipping?.correo  || "",
           phone: { number: shipping?.telefono || "" },
           address: {
             street_name: shipping?.direccion || "",
