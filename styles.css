@@ -1076,6 +1076,12 @@ a {
   font-weight: 600;
 }
 
+.cart-item-size {
+  font-size: 0.8rem;
+  color: #888;
+  margin: 2px 0;
+}
+
 .cart-item-controls {
   display: flex;
   align-items: center;
