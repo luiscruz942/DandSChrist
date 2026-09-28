@@ -3,29 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DandS Christ — Camisetas, Mugs y Accesorios Catolicos | Colombia</title>
-  <meta name="description" content="Tienda online de moda y accesorios catolicos en Colombia. Camisetas, mugs, termos, imanes y más, con envío a todo el país y pago seguro.">
-  <link rel="icon" href="images/logo_dands_christ.png" type="image/png">
+  <title>DandS Christ</title>
+  <link rel="icon" href="images/logo.png" type="image/png">
   <link rel="stylesheet" href="styles.css">
-
-  <!-- Open Graph / Facebook / WhatsApp -->
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://dandschrist.com/">
-  <meta property="og:title" content="DandS Christ — Moda Original y de Buena Calidad">
-  <meta property="og:description" content="Ropa y accesorios pensados para destacar. Camisetas, mugs, termos, imanes y más, con envíos a toda Colombia.">
-  <meta property="og:image" content="https://dandschrist.com/images/logo.png">
-  <meta property="og:locale" content="es_CO">
-
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="DandS Christ — Moda Original y de Buena Calidad">
-  <meta name="twitter:description" content="Ropa y accesorios pensados para destacar. Camisetas, mugs, termos, imanes y más, con envíos a toda Colombia.">
-  <meta name="twitter:image" content="https://dandschrist.com/images/logo.png">
 </head>
 <body>
   <header class="header">
     <div class="container">
-      <a href="index.html" class="logo"><img src="images/logo_dands_christ.png" width="75"></a>
+      <a href="index.html" class="logo"><img src="images/logo.png" width="75"></a>
       <nav class="nav">
         <a href="index.html" class="nav-link active">Tienda</a>
         <a href="Portfolio.html" class="nav-link">¿Quienes Somos?</a>
@@ -63,7 +48,7 @@
           <button class="filter-btn" data-category="magnets">Imanes</button>
           <button class="filter-btn" data-category="virgins">Virgenes</button>
           <button class="filter-btn" data-category="christmas">Navidad</button>
-          <button class="filter-btn" data-category="retires">Retiros</button>
+          <button class="filter-btn" data-category="retire">Retiros</button>
         </div>
 
         <div id="products-grid" class="products-grid">
@@ -112,11 +97,6 @@
             <p class="pdp-price" id="pdp-price"></p>
             <div class="pdp-divider"></div>
             <p class="pdp-desc" id="pdp-desc"></p>
-            <div class="pdp-size-selector" id="pdp-size-selector" style="display:none;">
-              <p class="pdp-size-label">Talla</p>
-              <div class="pdp-size-options" id="pdp-size-options"></div>
-              <p class="pdp-size-error" id="pdp-size-error"></p>
-            </div>
 
             <div class="pdp-meta">
               <div class="pdp-meta-item">
@@ -300,9 +280,6 @@
     </div>
   </div>
 
-  <!-- Toast Notification -->
-  <div id="toast" class="toast"></div>
-
   <script type="module" src="script.js"></script>
   <script type="module">
     import { login, observeAuth } from "./script.js";
@@ -383,14 +360,25 @@
       setupFilters();
     });
 
+    // Orden de categorías (mismo orden que los botones de filtro)
+    const CATEGORY_ORDER = ['shirts', 'thermos', 'mugs', 'mousepads', 'accessories', 'magnets', 'virgins', 'christmas', 'retire'];
+
     async function renderProducts(category = 'all') {
       const products = await getProducts();
       const grid = document.getElementById('products-grid');
       const emptyState = document.getElementById('empty-state');
 
-      const filtered = category === 'all'
+      const filtered = (category === 'all'
         ? products
-        : products.filter(p => p.category === category);
+        : products.filter(p => p.category === category))
+        .slice()
+        .sort((a, b) => {
+          const ia = CATEGORY_ORDER.indexOf(a.category);
+          const ib = CATEGORY_ORDER.indexOf(b.category);
+          const ra = ia === -1 ? CATEGORY_ORDER.length : ia;
+          const rb = ib === -1 ? CATEGORY_ORDER.length : ib;
+          return ra - rb || (a.name || '').localeCompare(b.name || '', 'es');
+        });
 
       if (filtered.length === 0) {
         grid.style.display = 'none';
@@ -419,8 +407,7 @@
                 data-image="${product.image || 'https://placehold.co/300x400/0a0a0a/86efac?text=D%26S'}"
                 data-images='${JSON.stringify(product.images && product.images.length ? product.images : [product.image || 'https://placehold.co/300x400/0a0a0a/86efac?text=D%26S']).replace(/'/g, "&#39;")}'
                 data-category="${product.category}"
-                data-description="${(product.description || '').replace(/"/g,'&quot;')}"
-                data-sizes='${JSON.stringify(product.sizes || []).replace(/'/g, "&#39;")}'>
+                data-description="${(product.description || '').replace(/"/g,'&quot;')}">
                 Comprar
               </button>
             </div>
@@ -485,7 +472,6 @@
           <img src="${item.image}" alt="${item.name}" class="cart-item-img">
           <div class="cart-item-info">
             <p class="cart-item-name">${item.name}</p>
-            ${item.size ? `<p class="cart-item-size">Talla ${item.size}</p>` : ''}
             <p class="cart-item-price">COP $${(item.price * item.qty).toLocaleString('es-CO')}</p>
           </div>
           <div class="cart-item-controls">
@@ -562,33 +548,6 @@
       document.getElementById('pdp-category-badge').textContent = product.category;
       document.getElementById('pdp-qty-value').textContent = 1;
 
-      // ── Selector de talla ──────────────────────────────────────
-      let selectedSize = null;
-      const sizeSelector = document.getElementById('pdp-size-selector');
-      const sizeOptions  = document.getElementById('pdp-size-options');
-      const sizeError    = document.getElementById('pdp-size-error');
-      sizeError.textContent = '';
-
-      if (product.sizes && product.sizes.length > 0) {
-        sizeSelector.style.display = 'block';
-        sizeOptions.innerHTML = product.sizes.map(size => `
-          <button type="button" class="pdp-size-btn" data-size="${size}">${size}</button>
-        `).join('');
-
-        sizeOptions.querySelectorAll('.pdp-size-btn').forEach(sizeBtn => {
-          sizeBtn.addEventListener('click', () => {
-            selectedSize = sizeBtn.dataset.size;
-            sizeOptions.querySelectorAll('.pdp-size-btn').forEach(b => b.classList.remove('active'));
-            sizeBtn.classList.add('active');
-            sizeError.textContent = '';
-          });
-        });
-      } else {
-        sizeSelector.style.display = 'none';
-      }
-
-      window.currentSelectedSize = () => selectedSize;
-
       const thumbsEl = document.getElementById('pdp-thumbs');
       if (gallery.length > 1) {
         thumbsEl.style.display = 'flex';
@@ -656,21 +615,10 @@
     document.getElementById('pdp-add-btn').addEventListener('click', () => {
       if (!pdpProduct) return;
 
-      const requiresSize = pdpProduct.sizes && pdpProduct.sizes.length > 0;
-      const chosenSize = window.currentSelectedSize ? window.currentSelectedSize() : null;
-
-      if (requiresSize && !chosenSize) {
-        document.getElementById('pdp-size-error').textContent = 'Por favor elige una talla.';
-        return;
-      }
-
-      const productWithSize = chosenSize
-        ? { ...pdpProduct, size: chosenSize, id: `${pdpProduct.id}-${chosenSize}` }
-        : pdpProduct;
-
       for (let i = 0; i < pdpQty; i++) {
-        addToCart(productWithSize);
+        addToCart(pdpProduct);
       }
+      // If qty > 1 we need to set correctly (addToCart increments by 1 each time, which is fine)
 
       const addBtn = document.getElementById('pdp-add-btn');
       addBtn.innerHTML = `
@@ -699,8 +647,7 @@
         image:       btn.dataset.image,
         images:      JSON.parse(btn.dataset.images || '[]'),
         category:    btn.dataset.category,
-        description: btn.dataset.description,
-        sizes:       JSON.parse(btn.dataset.sizes || '[]')
+        description: btn.dataset.description
       };
 
       openPDP(product);
@@ -777,7 +724,7 @@
       errorEl.textContent = '';
 
       try {
-        const res = await fetch('https://api.dandschrist.com/create-preference', {
+        const res = await fetch('/create-preference', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -852,16 +799,5 @@
     // Init cart count on load
     updateCartCount();
   </script>
-  <!-- Botón flotante de WhatsApp -->
-  <a href="https://wa.me/573178099569?text=Hola%2C%20quiero%20más%20información%20sobre%20sus%20productos"
-     class="whatsapp-float"
-     target="_blank"
-     rel="noopener noreferrer"
-     aria-label="Chatea con nosotros por WhatsApp">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white">
-      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
-      <path d="M12.004 2.003c-5.514 0-9.997 4.483-9.997 9.997 0 1.762.464 3.484 1.345 4.997L2 22l5.146-1.35a9.955 9.955 0 0 0 4.858 1.238h.004c5.514 0 9.997-4.483 9.997-9.997 0-2.67-1.04-5.182-2.929-7.071a9.933 9.933 0 0 0-7.072-2.929zm5.878 15.875a8.29 8.29 0 0 1-5.878 2.437h-.003a8.303 8.303 0 0 1-4.229-1.157l-.303-.18-3.055.801.816-2.978-.198-.306a8.297 8.297 0 0 1-1.27-4.42c0-4.59 3.735-8.325 8.326-8.325a8.27 8.27 0 0 1 5.885 2.442 8.267 8.267 0 0 1 2.437 5.885c0 4.59-3.735 8.326-8.325 8.326z"/>
-    </svg>
-  </a>
 </body>
 </html>
